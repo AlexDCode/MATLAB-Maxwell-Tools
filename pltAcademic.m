@@ -26,6 +26,7 @@ function pltAcademic(fig__, varargin)
     addParameter(p,'fontTitle',11); % Title Font Size
     addParameter(p,'showLegend',0); % Legend    
     addParameter(p,'legendLoc','best'); % Legend location    
+    addParameter(p,'save',1); % Save picture,, on by default    
     parse(p,varargin{:});
 
     if p.Results.showLegend
@@ -36,18 +37,43 @@ function pltAcademic(fig__, varargin)
         title(fig__.Name, 'FontSize', p.Results.fontTitle)
     end
     set(findall(fig__,'-property','Box'),'Box', p.Results.box) % optional
+    
+
+    if gca().Tag == 'smithplot'
+        % Prepare Smith Charts to change Interpreter
+        r=groot;
+        r.ShowHiddenHandles = 1;
+
+        smith = gca;
+        for i = 1:length(smith.Children)
+            if(strcmp(smith.Children(i).Tag, 'CircleTicks1'))
+                if(strcmp(smith.Children(i).String, '\infty'))
+                    smith.Children(i).String = '$\infty$';
+                end
+            end
+        end
+
+        lw = 1;
+    else
+        % Not execure on Smith Charts
+        axis tight
+        lw = p.Results.lw;
+    end
     set(findall(fig__,'-property','Interpreter'),'Interpreter','latex')
     set(findall(fig__,'-property','TickLabelInterpreter'),'TickLabelInterpreter','latex')
-    set(findall(fig__,'-property','LineWidth'),'LineWidth',p.Results.lw)
+
+    set(findall(fig__,'-property','LineWidth'),'LineWidth',lw)
+
     set(findall(fig__,'-property','MarkerSize'),'MarkerSize',p.Results.msz)
     set(fig__,'Units','centimeters','Position',[3 3 p.Results.width p.Results.hwRatio*p.Results.width])
-    axis tight
     pos = get(fig__,'Position');
     set(fig__,'PaperPositionMode','Auto','PaperUnits','centimeters','PaperSize',[pos(3) + 0.1, pos(4) + 0.1])
     
-    [~,~,~] = mkdir('img');
-    d = datetime;
-    d.Format = 'yyyy-MM-dd HHmm';
-    print(fig__, strcat('img/', string(d), "_", fig__.Name),'-dpdf','-vector');
-    print(fig__, strcat('img/', string(d), "_", fig__.Name),'-dpng','-vector', '-r300')
+    if p.Results.save
+        [~,~,~] = mkdir('img');
+        d = datetime;
+        d.Format = 'yyyy-MM-dd HHmm';
+        print(fig__, strcat('img/', string(d), "_", fig__.Name),'-dpdf','-vector');
+        print(fig__, strcat('img/', string(d), "_", fig__.Name),'-dpng','-vector', '-r300')
+    end
 end
