@@ -17,7 +17,7 @@ function pltAcademic(fig__, varargin)
     
     p = inputParser;
     addParameter(p,'title',0);    % Option to show title on top of Figure
-    addParameter(p,'box','off');  % Figure Bounding Box toggle
+    addParameter(p,'box','on');  % Figure Bounding Box toggle
     addParameter(p,'width',8.89); % [cm] Figure Width
     addParameter(p,'lw',1.5); % Line Width
     addParameter(p,'msz',6); % Marker Size
