@@ -24,15 +24,15 @@ function pltAcademic(fig__,  preset, varargin)
     defaultPos = get(0,'defaultfigureposition');
 
     if preset == "paper"
-        fontTitle = 11;
-        font = 11;
-        lw = 1.5;
+        fontTitle = 12;
+        font = 10;
+        lw = 1;
         msz = 6;
         units = 'centimeters';
         x = 3;
         y = 3;
         width = 8.89;
-        hwRatio = 0.65;
+        hwRatio = 0.6;
         save = 1;
     elseif preset == "display"
         fontTitle = 16;
@@ -43,7 +43,7 @@ function pltAcademic(fig__,  preset, varargin)
         x = defaultPos(1);
         y = defaultPos(2);        
         width = defaultPos(3);
-        hwRatio = 0.65;
+        hwRatio = 0.6;
         save = 0;
     elseif preset == "presentation"
         fontTitle = 26;
@@ -56,70 +56,88 @@ function pltAcademic(fig__,  preset, varargin)
         width = 24;
         hwRatio = 9/16;
         save = 1;
-    end
-
-
-    p = inputParser;
-    addParameter(p,'title',0);    % Option to show title on top of Figure
-    addParameter(p,'box','on');  % Figure Bounding Box toggle
-    addParameter(p,'width',width); % [cm] Figure Width
-    addParameter(p,'lw',lw); % Line Width
-    addParameter(p,'msz',msz); % Marker Size
-    addParameter(p,'hwRatio',hwRatio); % Height to Width Ratio
-    addParameter(p,'disableResize', 0);    % Option to not resize
-    addParameter(p,'font',font);  % Axis and Labels Font Size  
-    addParameter(p,'fontTitle',fontTitle); % Title Font Size
-    addParameter(p,'legendLoc','best'); % Legend location    
-    addParameter(p,'save',save); % Save picture,, on by default    
-    parse(p,varargin{:});
-
-
-
-    set(findall(fig__,'-property','FontSize'),'FontSize',p.Results.font) % adjust fontsize to your  document
-    if p.Results.title
-        title(fig__.Name, 'FontSize', p.Results.fontTitle)
+    elseif preset == "save"
+        p.Results.save = 1;
+        units = 'centimeters';
+    else
+        fontTitle = 16;
+        font = 12;
+        lw = 1.5;
+        msz = 6;
+        units = 'pixels';
+        x = defaultPos(1);
+        y = defaultPos(2);        
+        width = defaultPos(3);
+        hwRatio = 0.65;
+        save = 0;
     end
     
+    if preset ~= "save"
+        p = inputParser;
+        addParameter(p,'title',0);    % Option to show title on top of Figure
+        addParameter(p,'box','on');  % Figure Bounding Box toggle
+        addParameter(p,'width',width); % [cm] Figure Width
+        addParameter(p,'lw',lw); % Line Width
+        addParameter(p,'msz',msz); % Marker Size
+        addParameter(p,'hwRatio',hwRatio); % Height to Width Ratio
+        addParameter(p,'disableResize', 0);    % Option to not resize
+        addParameter(p,'font',font);  % Axis and Labels Font Size  
+        addParameter(p,'fontTitle',fontTitle); % Title Font Size
+        addParameter(p,'legendLoc','best'); % Legend location    
+        addParameter(p,'save',save); % Save picture,, on by default    
+        parse(p,varargin{:});
 
-    set(findall(fig__,'-property','Box'),'Box', p.Results.box) % optional
-    set(findall(fig__,'-property','Interpreter'),'Interpreter','latex')
-    set(findall(fig__,'-property','TickLabelInterpreter'),'TickLabelInterpreter','latex')
+        lw = p.Results.lw;
+       
+        set(findall(fig__,'-property','FontSize'),'FontSize',p.Results.font) % adjust fontsize to your  document
+        if p.Results.title
+            title(fig__.Name, 'FontSize', p.Results.fontTitle)
+        end
+        
+    
+        set(findall(fig__,'-property','Box'),'Box', p.Results.box) % optional
+        set(findall(fig__,'-property','Interpreter'),'Interpreter','tex')
+        set(findall(fig__,'-property','TickLabelInterpreter'),'TickLabelInterpreter','tex')
+        set(findall(fig__,'-property','MarkerSize'),'MarkerSize',p.Results.msz)
 
+    
+        if string(gca().Tag) == "smithplot"
+            % Prepare Smith Charts to change Interpreter
+            r=groot;
+            r.ShowHiddenHandles = 1;
+            hwRatio = 1;
+            smith = gca;
+            set(fig__, 'Color', 'white'); % then change the figure's color
+            set(smith, 'Color', 'white'); % then change the figure's color
+            set(findall(fig__, 'Type', 'Patch'), 'FaceColor', [1 1 1]);
 
-    if string(gca().Tag) == "smithplot"
-        % Prepare Smith Charts to change Interpreter
-        r=groot;
-        r.ShowHiddenHandles = 1;
-
-        smith = gca;
-        for i = 1:length(smith.Children)
-            if(strcmp(smith.Children(i).Tag, 'CircleTicks1'))
-                if(strcmp(smith.Children(i).String, '\infty'))
-                    smith.Children(i).String = '$\infty$';
+            for i = 1:length(smith.Children)
+                if(strcmp(smith.Children(i).Tag, 'CircleTicks1'))
+                    % if(strcmp(smith.Children(i).String, '\infty'))
+                    %     smith.Children(i).String = '\infty';
+                    % end
                 end
             end
+            smith.GridLineWidth = 0.25;
+            smith.LineWidth = lw;
+        else
+            set(findall(fig__,'-property','LineWidth'),'LineWidth',lw)
+            set(findall(fig__,'-property','MarkerSize'),'MarkerSize',p.Results.msz)
         end
 
-        lw = 1;
-    else
-        % Not execure on Smith Charts
-        axis tight
-        lw = p.Results.lw;
-    end
-    set(findall(fig__,'-property','LineWidth'),'LineWidth',lw)
-    set(findall(fig__,'-property','MarkerSize'),'MarkerSize',p.Results.msz)
 
-    set(fig__,'Units',units,'Position',[x y p.Results.width p.Results.hwRatio*p.Results.width])
-    if p.Results.disableResize == 0
-        set(fig__,'PaperPositionMode','Auto','PaperUnits','centimeters','PaperSize',[pos(3) + 0.1, pos(4) + 0.1])
+    
+        set(fig__,'Units',units,'Position',[x y p.Results.width p.Results.hwRatio*p.Results.width])
+        if p.Results.disableResize == 0
+            set(fig__,'PaperPositionMode','Auto','PaperUnits','centimeters','PaperSize',[pos(3) + 0.1, pos(4) + 0.1])
+        end
     end
     
     if p.Results.save
         [~,~,~] = mkdir('img');
         d = datetime;
         d.Format = 'yyyy-MM-dd HHmm';
-        path = strcat('img/', string(d), "_", fig__.Name, "_", preset);
-        print(fig__, path,'-dpdf','-vector');
-        print(fig__, path,'-dpng','-vector', '-r300')
+        path = strcat('img/', fig__.Name);
+        exportgraphics(fig__,strcat(path,'.pdf'),'ContentType','vector',Units=units)
     end
 end
