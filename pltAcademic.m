@@ -88,7 +88,7 @@ function pltAcademic(fig__,  preset, varargin)
         parse(p,varargin{:});
 
         lw = p.Results.lw;
-       
+        hwRatio = p.Results.hwRatio;
         set(findall(fig__,'-property','FontSize'),'FontSize',p.Results.font) % adjust fontsize to your  document
         if p.Results.title
             title(fig__.Name, 'FontSize', p.Results.fontTitle)
@@ -127,7 +127,7 @@ function pltAcademic(fig__,  preset, varargin)
 
 
     
-        set(fig__,'Units',units,'Position',[x y p.Results.width p.Results.hwRatio*p.Results.width])
+        set(fig__,'Units',units,'Position',[x y p.Results.width hwRatio*p.Results.width])
         if p.Results.disableResize == 0
             set(fig__,'PaperPositionMode','Auto','PaperUnits','centimeters','PaperSize',[pos(3) + 0.1, pos(4) + 0.1])
         end
